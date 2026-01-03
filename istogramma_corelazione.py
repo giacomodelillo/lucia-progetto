@@ -1,69 +1,170 @@
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
-import io
+
+# Impostazione del tema
+plt.style.use('seaborn-v0_8-muted')
+
+# ==============================================================================
+# 1. LIBRERIA PRESET (MAPPATURE)
+# ==============================================================================
+# Qui definisci come tradurre i numeri (0 e 1) in testo
+PRESET_MAPPATURE = {
+    'NESSUNO': {}, # Usa "Gruppo 0" e "Gruppo 1" o manuali
+    
+    'EVENTI_BOOLEANI': {
+        0: 'Eventi Assenti', 
+        1: 'Eventi Presenti'
+    },
+    
+    'SI_NO': {
+        0: 'No', 
+        1: 'Sì'
+    },
+    
+    'MASCHIO_FEMMINA': {
+        0: 'Maschi', 
+        1: 'Femmine'
+    },
+    
+    'WEEKEND': {
+        0: 'Giorni Feriali', 
+        1: 'Weekend'
+    }
+}
+
+# ==============================================================================
+# 2. CONFIGURAZIONE UTENTE (MODIFICA QUI)
+# ==============================================================================
+
+# --- FILE E DATI ---
+FILE_PATH = 'Data-Management-3-2.csv'
+
+# Quali colonne vuoi analizzare? (Verranno SOMMATE tra loro)
+COLONNE_DA_SOMMARE = [
+    'Arrivi_Italiani', 
+    'Arrivi_Stranieri'
+]
+
+# La colonna che fa da discriminante (deve contenere 0 e 1)
+COLONNA_BOOLEANA = 'Evento'
+
+# --- SCELTA PRESET ---
+# Scrivi qui il nome del preset da usare (vedi lista sopra)
+NOME_PRESET = 'EVENTI_BOOLEANI' 
+
+# --- MODALITÀ GRAFICO ---
+# True  = BOXPLOT (Distribuzione statistica)
+# False = ISTOGRAMMA (Somma Totale)
+USA_BOXPLOT = False
+
+# --- CONFIGURAZIONE ETICHETTE (SOLO PER ISTOGRAMMA) ---
+POSIZIONE_LABEL = 'center' # 'center' (dentro, bianco), 'top' (sopra, nero), 'none'
+ROTAZIONE_LABEL = 0        # 0 orizzontale, 90 verticale
+
+# --- ESTETICA E TITOLI ---
+TITOLO_GRAFICO = 'Analisi Impatto Eventi sui Flussi Turistici'
+DISTANZA_TITOLO = 30       # Spazio extra tra titolo e grafico
+TITOLO_ASSE_X  = 'Stato'
+TITOLO_ASSE_Y  = 'Totale Arrivi'
+
+# Colori
+COLORE_0  = '#51a2ff'  # Colore per il gruppo 0 (es. No Evento)
+COLORE_1  = '#a684ff'  # Colore per il gruppo 1 (es. Sì Evento)
+
+# ==============================================================================
+try:
+    df = pd.read_csv(FILE_PATH, thousands=',', on_bad_lines='skip')
+except FileNotFoundError:
+    print(f"ERRORE CRITICO: Il file '{FILE_PATH}' non è stato trovato.")
+    exit()
+
+for col in COLONNE_DA_SOMMARE:
+    if col in df.columns:
+        df[col] = df[col].astype(str).str.replace(r'[^\d\.]', '', regex=True)
+        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+    else:
+        print(f"ATTENZIONE: La colonna '{col}' non esiste nel CSV.")
+
+df['Variabile_Analisi'] = df[COLONNE_DA_SOMMARE].sum(axis=1)
+
+df = df[df[COLONNA_BOOLEANA].notnull()]
+df[COLONNA_BOOLEANA] = df[COLONNA_BOOLEANA].astype(int)
+
+data_0 = df[df[COLONNA_BOOLEANA] == 0]['Variabile_Analisi']
+data_1 = df[df[COLONNA_BOOLEANA] == 1]['Variabile_Analisi']
+
+mappa = PRESET_MAPPATURE.get(NOME_PRESET, {})
+label_0 = mappa.get(0, "Gruppo 0") 
+label_1 = mappa.get(1, "Gruppo 1") 
 
 
+plt.figure(figsize=(9, 7))
 
-df = pd.read_csv('Data-Management-3-2.csv')
+etichette = [label_0, label_1]
+colori = [COLORE_0, COLORE_1]
 
-# 2. Pulizia e Calcoli
-df = df[~df['Anno'].isin([2020, 2021])] # Esclusione anni Covid
-df['Arrivi_Totali'] = df['Arrivi_Italiani'] + df['Arrivi_Stranieri']
-df['Presenze_Totali'] = df['Presenze_Italiani'] + df['Presenze_Stranieri']
-df['Durata'] = df['Presenze_Totali'] / df['Arrivi_Totali']
+if USA_BOXPLOT:
 
-# 3. Preparazione dei dati raggruppati
-# Calcoliamo le medie per i due gruppi
-grouped = df.groupby('Evento').mean(numeric_only=True)[['Arrivi_Totali', 'Durata']]
+    print(f"Generazione Boxplot ({label_0} vs {label_1})")
+    
+    bplot = plt.boxplot([data_0, data_1], 
+                        labels=etichette, 
+                        patch_artist=True,
+                        medianprops=dict(color="black", linewidth=1.5),
+                        widths=0.6)
 
-labels = ['No Eventi', 'Sì Eventi']
-arrivi_means = grouped['Arrivi_Totali'].values
-durata_means = grouped['Durata'].values
+    for patch, color in zip(bplot['boxes'], colori):
+        patch.set_facecolor(color)
+        patch.set_alpha(0.85)
 
-x = np.arange(len(labels))  # Posizioni delle etichette
-width = 0.35  # Larghezza delle barre
+ 
+    for i, d in enumerate([data_0, data_1]):
+        y = d
+        x = np.random.normal(1 + i, 0.04, size=len(y))
+        plt.scatter(x, y, alpha=0.4, color='black', s=15, zorder=10)
 
-# 4. Creazione del Grafico Unico con Doppio Asse Y
-fig, ax1 = plt.subplots(figsize=(10, 7))
+else:
+    print(f"Generazione Istogramma Somme ({label_0} vs {label_1})")
+    
+    valori = [data_0.sum(), data_1.sum()]
+    
+    bars = plt.bar(etichette, valori, color=colori, edgecolor='white', width=0.6)
 
-# --- BARRE 1: ARRIVI (Asse Sinistro - Blu) ---
-rects1 = ax1.bar(x - width/2, arrivi_means, width, label='Media Arrivi', color='#1f77b4', alpha=0.9, edgecolor='black')
-ax1.set_ylabel('Numero di Arrivi', color='#1f77b4', fontsize=12, fontweight='bold')
-ax1.set_title('Confronto Diretto: Arrivi vs Durata Soggiorno\n(Raggruppato per Presenza Eventi)', fontsize=14)
-ax1.set_xticks(x)
-ax1.set_xticklabels(labels, fontsize=12)
-ax1.tick_params(axis='y', labelcolor='#1f77b4')
+    if POSIZIONE_LABEL != 'none':
+        for bar in bars:
+            height = bar.get_height()
+            
+           
+            if POSIZIONE_LABEL == 'center':
+                xy_pos = (bar.get_x() + bar.get_width() / 2, height / 2)
+                xy_offset = (0, 0)
+                va_align = 'center'
+                txt_color = 'white'
+            else: 
+                xy_pos = (bar.get_x() + bar.get_width() / 2, height)
+                xy_offset = (0, 5)
+                va_align = 'bottom'
+                txt_color = 'black'
 
-# --- BARRE 2: DURATA (Asse Destro - Arancione) ---
-ax2 = ax1.twinx()  # Crea un secondo asse Y che condivide lo stesso asse X
-rects2 = ax2.bar(x + width/2, durata_means, width, label='Media Durata', color='#ff7f0e', alpha=0.9, edgecolor='black')
-ax2.set_ylabel('Durata Media (Giorni)', color='#ff7f0e', fontsize=12, fontweight='bold')
-ax2.tick_params(axis='y', labelcolor='#ff7f0e')
+            if height > 0:
+                plt.annotate(f'{height:,.0f}',
+                            xy=xy_pos,
+                            xytext=xy_offset,
+                            textcoords="offset points",
+                            ha='center', va=va_align,
+                            fontsize=12, 
+                            color=txt_color, 
+                            fontweight='bold', 
+                            rotation=ROTAZIONE_LABEL)
 
-# Impostiamo i limiti dell'asse Y per "dare aria" alle barre
-ax1.set_ylim(0, max(arrivi_means) * 1.2)
-ax2.set_ylim(0, max(durata_means) * 1.2)
+# --- FINITURE GRAFICO ---
+plt.title(TITOLO_GRAFICO, fontsize=16, fontweight='bold', pad=DISTANZA_TITOLO)
+plt.xlabel(TITOLO_ASSE_X, fontsize=13, labelpad=10)
+plt.ylabel(TITOLO_ASSE_Y, fontsize=13, labelpad=10)
 
-# --- Aggiunta delle Etichette Valori sopra le barre ---
-def autolabel(rects, ax, format_str):
-    """Funzione per attaccare un'etichetta con il valore sopra ogni barra"""
-    for rect in rects:
-        height = rect.get_height()
-        ax.annotate(format_str.format(height),
-                    xy=(rect.get_x() + rect.get_width() / 2, height),
-                    xytext=(0, 3),  # 3 punti di offset verticale
-                    textcoords="offset points",
-                    ha='center', va='bottom', fontweight='bold')
 
-autolabel(rects1, ax1, "{:,.0f}")  # Formato intero per Arrivi
-autolabel(rects2, ax2, "{:.2f} gg") # Formato decimale per Giorni
+plt.grid(axis='y', linestyle='--', alpha=0.5)
 
-# Legenda unica combinata
-lines, labels_l = ax1.get_legend_handles_labels()
-lines2, labels2 = ax2.get_legend_handles_labels()
-ax2.legend(lines + lines2, labels_l + labels2, loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=2)
-
-fig.tight_layout()
-plt.grid(axis='y', linestyle='--', alpha=0.3)
+plt.tight_layout()
 plt.show()
