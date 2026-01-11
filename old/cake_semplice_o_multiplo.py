@@ -10,25 +10,25 @@ plt.style.use('seaborn-v0_8-muted')
 # ==============================================================================
 PRESET_MAPPATURE = {
     'NESSUNO': {}, # Usa i valori originali del file
-    
+
     'MESI': {
         1: 'Gennaio', 2: 'Febbraio', 3: 'Marzo', 4: 'Aprile',
         5: 'Maggio', 6: 'Giugno', 7: 'Luglio', 8: 'Agosto',
         9: 'Settembre', 10: 'Ottobre', 11: 'Novembre', 12: 'Dicembre'
     },
-    
+
     'GIORNI_SETTIMANA': {
         1: 'Lunedì', 2: 'Martedì', 3: 'Mercoledì', 4: 'Giovedì',
         5: 'Venerdì', 6: 'Sabato', 7: 'Domenica'
     },
-    
+
     'EVENTI_BOOLEANI': {
         0: 'Nessun Evento',
         1: 'Evento Presente'
     },
-    
+
     'TRIMESTRI': {
-        1: 'Q1 (Gen-Mar)', 2: 'Q2 (Apr-Giu)', 
+        1: 'Q1 (Gen-Mar)', 2: 'Q2 (Apr-Giu)',
         3: 'Q3 (Lug-Set)', 4: 'Q4 (Ott-Dic)'
     }
 }
@@ -38,19 +38,19 @@ PRESET_MAPPATURE = {
 # ==============================================================================
 
 # --- FILE E DATI ---
-FILE_PATH = 'Data-Management-3-2.csv'
+FILE_PATH = 'data_lucia.csv'
 
 # --- SELEZIONE COLONNE ---
 COLONNA_CATEGORIA = 'Mese'   # Es. 'Mese', 'Evento'
 COLONNE_VALORI = [
-    'Arrivi_Italiani', 
+    'Arrivi_Italiani',
     'Arrivi_Stranieri'
 ]
 
 # --- SCELTA PRESET (NOVITÀ) ---
 # Scrivi qui il nome del preset da usare (vedi lista sopra):
 # Opzioni: 'NESSUNO', 'MESI', 'GIORNI_SETTIMANA', 'EVENTI_BOOLEANI', 'TRIMESTRI'
-NOME_PRESET = 'MESI' 
+NOME_PRESET = 'MESI'
 
 # --- OPZIONI AVANZATE ---
 SOGLIA_CUTOFF = 2.5    # % sotto la quale finisce in "Altro"
@@ -128,8 +128,8 @@ labels = df_final[COLONNA_CATEGORIA]
 sizes = df_final['Valore_Totale']
 
 # Creazione Torta
-wedges, texts, autotexts = plt.pie(sizes, 
-                                   labels=labels, 
+wedges, texts, autotexts = plt.pie(sizes,
+                                   labels=labels,
                                    autopct='%1.1f%%',
                                    startangle=140,
                                    pctdistance=0.82 if STILE_CIAMBELLA else 0.6,

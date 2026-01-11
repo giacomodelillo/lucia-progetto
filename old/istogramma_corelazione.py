@@ -11,24 +11,24 @@ plt.style.use('seaborn-v0_8-muted')
 # Qui definisci come tradurre i numeri (0 e 1) in testo
 PRESET_MAPPATURE = {
     'NESSUNO': {}, # Usa "Gruppo 0" e "Gruppo 1" o manuali
-    
+
     'EVENTI_BOOLEANI': {
-        0: 'Eventi Assenti', 
+        0: 'Eventi Assenti',
         1: 'Eventi Presenti'
     },
-    
+
     'SI_NO': {
-        0: 'No', 
+        0: 'No',
         1: 'Sì'
     },
-    
+
     'MASCHIO_FEMMINA': {
-        0: 'Maschi', 
+        0: 'Maschi',
         1: 'Femmine'
     },
-    
+
     'WEEKEND': {
-        0: 'Giorni Feriali', 
+        0: 'Giorni Feriali',
         1: 'Weekend'
     }
 }
@@ -38,11 +38,11 @@ PRESET_MAPPATURE = {
 # ==============================================================================
 
 # --- FILE E DATI ---
-FILE_PATH = 'Data-Management-3-2.csv'
+FILE_PATH = 'data_lucia.csv'
 
 # Quali colonne vuoi analizzare? (Verranno SOMMATE tra loro)
 COLONNE_DA_SOMMARE = [
-    'Arrivi_Italiani', 
+    'Arrivi_Italiani',
     'Arrivi_Stranieri'
 ]
 
@@ -51,12 +51,12 @@ COLONNA_BOOLEANA = 'Evento'
 
 # --- SCELTA PRESET ---
 # Scrivi qui il nome del preset da usare (vedi lista sopra)
-NOME_PRESET = 'EVENTI_BOOLEANI' 
+NOME_PRESET = 'EVENTI_BOOLEANI'
 
 # --- MODALITÀ GRAFICO ---
 # True  = BOXPLOT (Distribuzione statistica)
 # False = ISTOGRAMMA (Somma Totale)
-USA_BOXPLOT = False
+USA_BOXPLOT = True
 
 # --- CONFIGURAZIONE ETICHETTE (SOLO PER ISTOGRAMMA) ---
 POSIZIONE_LABEL = 'center' # 'center' (dentro, bianco), 'top' (sopra, nero), 'none'
@@ -95,8 +95,8 @@ data_0 = df[df[COLONNA_BOOLEANA] == 0]['Variabile_Analisi']
 data_1 = df[df[COLONNA_BOOLEANA] == 1]['Variabile_Analisi']
 
 mappa = PRESET_MAPPATURE.get(NOME_PRESET, {})
-label_0 = mappa.get(0, "Gruppo 0") 
-label_1 = mappa.get(1, "Gruppo 1") 
+label_0 = mappa.get(0, "Gruppo 0")
+label_1 = mappa.get(1, "Gruppo 1")
 
 
 plt.figure(figsize=(9, 7))
@@ -107,9 +107,9 @@ colori = [COLORE_0, COLORE_1]
 if USA_BOXPLOT:
 
     print(f"Generazione Boxplot ({label_0} vs {label_1})")
-    
-    bplot = plt.boxplot([data_0, data_1], 
-                        labels=etichette, 
+
+    bplot = plt.boxplot([data_0, data_1],
+                        labels=etichette,
                         patch_artist=True,
                         medianprops=dict(color="black", linewidth=1.5),
                         widths=0.6)
@@ -118,7 +118,7 @@ if USA_BOXPLOT:
         patch.set_facecolor(color)
         patch.set_alpha(0.85)
 
- 
+
     for i, d in enumerate([data_0, data_1]):
         y = d
         x = np.random.normal(1 + i, 0.04, size=len(y))
@@ -126,22 +126,22 @@ if USA_BOXPLOT:
 
 else:
     print(f"Generazione Istogramma Somme ({label_0} vs {label_1})")
-    
+
     valori = [data_0.sum(), data_1.sum()]
-    
+
     bars = plt.bar(etichette, valori, color=colori, edgecolor='white', width=0.6)
 
     if POSIZIONE_LABEL != 'none':
         for bar in bars:
             height = bar.get_height()
-            
-           
+
+
             if POSIZIONE_LABEL == 'center':
                 xy_pos = (bar.get_x() + bar.get_width() / 2, height / 2)
                 xy_offset = (0, 0)
                 va_align = 'center'
                 txt_color = 'white'
-            else: 
+            else:
                 xy_pos = (bar.get_x() + bar.get_width() / 2, height)
                 xy_offset = (0, 5)
                 va_align = 'bottom'
@@ -153,9 +153,9 @@ else:
                             xytext=xy_offset,
                             textcoords="offset points",
                             ha='center', va=va_align,
-                            fontsize=12, 
-                            color=txt_color, 
-                            fontweight='bold', 
+                            fontsize=12,
+                            color=txt_color,
+                            fontweight='bold',
                             rotation=ROTAZIONE_LABEL)
 
 # --- FINITURE GRAFICO ---

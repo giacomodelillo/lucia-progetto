@@ -32,7 +32,7 @@ PRESET_MAPPATURE = {
 # ==============================================================================
 
 # --- FILE E DATI ---
-FILE_PATH = 'Data-Management-3-2.csv'
+FILE_PATH = 'data_lucia.csv'
 
 # --- CONFIGURAZIONE ASSI ---
 COLONNA_X = 'Mese' 
@@ -40,7 +40,10 @@ COLONNA_X = 'Mese'
 # Asse Y: Lista delle colonne da visualizzare (una barra per ognuna)
 COLONNE_Y = [
     'Arrivi_Italiani', 
-    'Arrivi_Stranieri'
+    'Arrivi_Stranieri',
+    'Presenze_Italiani',
+    'Presenze_Stranieri'
+
 ]
 
 # --- PRESET ETICHETTE ASSE X (NOVITÀ) ---
